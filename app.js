@@ -5,9 +5,11 @@ async function processText() {
 
     if (!input) return alert("Please enter some text!");
 
-    const API_KEY = 'YOUR_GEMINI_API_KEY';
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+    // Access the key from the environment variable
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
+// Use API_KEY in your fetch call
+const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
     try {
         const response = await fetch(url, {
             method: 'POST',
