@@ -5,6 +5,12 @@ async function processText() {
 
     if (!input) return alert("Please enter some text!");
 
+    // Simulated response for the demo video
+    resultText.innerText = "SIMPLIFIED SUMMARY: This complex information is now easy to understand. We have broken it down into simple, local terms for better community health access.";
+    
+    outputDiv.classList.remove('hidden');
+}
+
     // Access the key from the environment variable
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
