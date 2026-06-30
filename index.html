@@ -1,22 +1,282 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareBridge AI</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Gemini AI Demo</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    background:#f5f7fb;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    padding:20px;
+}
+
+.container{
+    width:100%;
+    max-width:800px;
+    background:#fff;
+    border-radius:14px;
+    padding:25px;
+    box-shadow:0 10px 35px rgba(0,0,0,.08);
+}
+
+h1{
+    text-align:center;
+    margin-bottom:20px;
+    color:#222;
+}
+
+p{
+    color:#666;
+    text-align:center;
+    margin-bottom:25px;
+}
+
+textarea{
+    width:100%;
+    min-height:180px;
+    padding:15px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    resize:vertical;
+    font-size:16px;
+    outline:none;
+}
+
+textarea:focus{
+    border-color:#4f46e5;
+}
+
+button{
+    margin-top:18px;
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:10px;
+    background:#4f46e5;
+    color:white;
+    font-size:17px;
+    cursor:pointer;
+    transition:.25s;
+}
+
+button:hover{
+    background:#4338ca;
+}
+
+button:disabled{
+    background:#888;
+    cursor:not-allowed;
+}
+
+#loading{
+    display:none;
+    margin-top:15px;
+    text-align:center;
+    color:#444;
+}
+
+.output{
+    margin-top:25px;
+    background:#fafafa;
+    border:1px solid #ddd;
+    border-radius:10px;
+    padding:18px;
+    white-space:pre-wrap;
+    line-height:1.6;
+    min-height:150px;
+}
+
+footer{
+    margin-top:18px;
+    text-align:center;
+    color:#777;
+    font-size:13px;
+}
+
+@media(max-width:600px){
+
+.container{
+    padding:18px;
+}
+
+h1{
+    font-size:24px;
+}
+
+button{
+    font-size:16px;
+}
+
+}
+</style>
+
 </head>
 <body>
-    <div class="container">
-        <h1>CareBridge AI</h1>
-        <p>Simplifying vital information for everyone.</p>
-        <textarea id="inputField" placeholder="Paste complex medical/educational text here..."></textarea>
-        <button onclick="processText()">Simplify & Translate</button>
-        <div id="output" class="hidden">
-            <h3>Result:</h3>
-            <p id="resultText"></p>
-        </div>
-    </div>
-    <script src="app.js"></script>
+
+<div class="container">
+
+<h1>Gemini AI Demo</h1>
+
+<p>Powered by Gemini 1.5 Flash API</p>
+
+<textarea
+id="prompt"
+placeholder="Ask Gemini anything..."></textarea>
+
+<button id="generateBtn">
+Generate Response
+</button>
+
+<div id="loading">
+Generating...
+</div>
+
+<div class="output" id="output">
+Your response will appear here.
+</div>
+
+<footer>
+Hackathon Demo • GitHub Pages Ready
+</footer>
+
+</div>
+
+<script>
+
+/* =======================================================
+   PASTE YOUR GEMINI API KEY HERE
+   ======================================================= */
+
+const GEMINI_API_KEY = "PASTE_YOUR_API_KEY_HERE";
+
+/* =======================================================
+   Gemini 1.5 Flash Endpoint
+   ======================================================= */
+
+const ENDPOINT =
+`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+const button = document.getElementById("generateBtn");
+const promptBox = document.getElementById("prompt");
+const output = document.getElementById("output");
+const loading = document.getElementById("loading");
+
+button.addEventListener("click", generateResponse);
+
+async function generateResponse(){
+
+    const prompt = promptBox.value.trim();
+
+    if(!prompt){
+        alert("Please enter a prompt.");
+        return;
+    }
+
+    if(
+        GEMINI_API_KEY === "" ||
+        GEMINI_API_KEY === "PASTE_YOUR_API_KEY_HERE"
+    ){
+        alert("Please paste your Gemini API Key.");
+        return;
+    }
+
+    output.textContent = "";
+    loading.style.display="block";
+    button.disabled=true;
+
+    try{
+
+        const response = await fetch(ENDPOINT,{
+
+            method:"POST",
+
+            headers:{
+                "Content-Type":"application/json"
+            },
+
+            body:JSON.stringify({
+
+                contents:[
+                    {
+                        parts:[
+                            {
+                                text:prompt
+                            }
+                        ]
+                    }
+                ]
+
+            })
+
+        });
+
+        if(!response.ok){
+
+            const errorText = await response.text();
+
+            console.error("API Error:",errorText);
+
+            alert("Gemini API request failed. Check your API Key or quota.");
+
+            throw new Error(errorText);
+
+        }
+
+        const data = await response.json();
+
+        console.log(data);
+
+        const text =
+            data.candidates?.[0]
+            ?.content
+            ?.parts?.[0]
+            ?.text;
+
+        if(text){
+
+            output.textContent=text;
+
+        }else{
+
+            output.textContent="No response returned.";
+
+        }
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        alert("Network error or invalid API key.");
+
+        output.textContent="Something went wrong.";
+
+    }
+
+    finally{
+
+        loading.style.display="none";
+        button.disabled=false;
+
+    }
+
+}
+
+</script>
+
 </body>
 </html>
